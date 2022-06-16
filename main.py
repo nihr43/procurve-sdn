@@ -9,6 +9,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
 from os import environ
 from sys import argv
+from time import sleep
 
 log = logging.getLogger(__name__)
 
@@ -32,6 +33,7 @@ def main(argv):
     login(driver, wait, password)
     enable_jumbo_frames(driver, wait)
     enable_lacp(driver, wait)
+    to_home(driver, wait)
 
 
 def headless():
@@ -60,6 +62,25 @@ def to_main(driver):
     driver.switch_to.frame("mainFrame")
 
 
+# if we hit a save button, and then the program immediately exists, the save is not persisted.
+# this function exists as a soft "reset" after performing each action.  if we're able to navigate
+# home without any more issues after a save, we can be reasonably sure it "took".
+# the correct answer perhaps is to create disposable drivers for each action to
+# absolutely ensure we always start and end at a known state.
+def to_home(driver, wait):
+    to_menu(driver)
+    system_menu = wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@id='sys']")))
+    system_menu.click()
+    to_menu(driver)
+    info_menu = wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@id='stat']")))
+    info_menu.click()
+    to_main(driver)
+    refresh = wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@name='btnRefresh']")))
+    refresh.click()
+    to_main(driver)
+    wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@name='btnRefresh']")))
+
+
 def login(driver, wait, password):
     log.info("Logging in...")
     driver.switch_to.frame("loginFrame")
@@ -69,8 +90,7 @@ def login(driver, wait, password):
     pass_box.send_keys(Keys.RETURN)
 
     # wait for full page to load before returning
-    to_main(driver)
-    wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@name='btnRefresh']")))
+    to_home(driver, wait)
 
 
 def enable_jumbo_frames(driver, wait):
@@ -81,7 +101,7 @@ def enable_jumbo_frames(driver, wait):
     jumbo_checkbox = wait.until(ec.visibility_of_element_located((By.XPATH, "//input[@id='R10']")))
     if not jumbo_checkbox.is_selected():
         jumbo_checkbox.click()
-        apply = driver.find_element_by_name('btnSaveSettings')
+        apply = driver.find_element(by=By.NAME, value="btnSaveSettings")
         apply.click()
 
 
@@ -103,8 +123,12 @@ def enable_lacp(driver, wait):
             boxes_mutated.append(check)
 
     if boxes_mutated:
-        apply = driver.find_element_by_name('btnSaveSettings')
+        apply = driver.find_element(by=By.NAME, value="btnSaveSettings")
         apply.click()
+
+        # TODO: i have not found a good way to wait for a possible alert.  the below wait.until doesnt seem to work
+        sleep(1)
+        wait.until(ec.alert_is_present())
         alert = driver.switch_to.alert
         alert.accept()
 
