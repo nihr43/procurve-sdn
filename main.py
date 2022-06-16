@@ -51,8 +51,7 @@ def login(driver, wait, password):
     log.info("Logging in...")
     driver.switch_to.frame("loginFrame")
 
-    wait.until(ec.visibility_of_element_located((By.XPATH, "//input[@id='password']")))
-    pass_box = driver.find_element_by_id('password')
+    pass_box = wait.until(ec.visibility_of_element_located((By.XPATH, "//input[@id='password']")))
 #   pass_box.send_keys(password)
     pass_box.send_keys(Keys.RETURN)
 
@@ -91,7 +90,7 @@ def enable_lacp(driver, wait):
     driver.switch_to.frame("loginFrame")
     driver.switch_to.frame("mainFrame")
 
-    lacp_checkboxes = driver.find_elements_by_xpath("//input[@type='checkbox']")
+    lacp_checkboxes = driver.find_elements(by=By.XPATH, value="//input[@type='checkbox']")
 
     boxes_mutated = []
 
