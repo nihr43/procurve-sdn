@@ -8,16 +8,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
 from os import environ
-from time import sleep
-from sys import argv, stderr
+from sys import argv
 
 log = logging.getLogger(__name__)
+
 
 def main(argv):
     base = 'http://192.168.2.10/index.html'
 
     if '--headless' in argv:
-        options=headless()
+        options = headless()
     else:
         options = ChromeOptions()
 
@@ -25,14 +25,14 @@ def main(argv):
     driver = Chrome(service=s,
                     options=options)
 
-
-    password=''
+    password = ''
 
     driver.get(base)
     wait = WebDriverWait(driver, 10)
     login(driver, wait, password)
     enable_jumbo_frames(driver, wait)
     enable_lacp(driver, wait)
+
 
 def headless():
     chrome_options = ChromeOptions()
