@@ -24,8 +24,7 @@ def main():
     password=''
 
     driver.get(base)
-    login(driver, base, password)
-
+    login(driver, password)
     enable_jumbo_frames(driver)
     enable_lacp(driver)
 
@@ -43,7 +42,7 @@ def big_headless(invisible=True, PATH=None):
     return chrome_options
 
 
-def login(driver, base, password):
+def login(driver, password):
     log.info("Logging in...")
     driver.switch_to.frame("loginFrame")
 
