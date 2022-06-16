@@ -12,13 +12,17 @@ from sys import argv, stderr
 
 log = logging.getLogger(__name__)
 
-def main():
+def main(argv):
     base = 'http://192.168.2.10/index.html'
+
+    if '--headless' in argv:
+        options=headless()
+    else:
+        options = ChromeOptions()
 
     executable_path = environ.get('CHROMEDRIVER') or '/usr/bin/chromedriver'
     driver = Chrome(executable_path=executable_path,
-                    options=big_headless('--visible' not in argv,
-                                         environ.get('PATH')))
+                    options=options)
 
 
     password=''
@@ -28,15 +32,14 @@ def main():
     enable_jumbo_frames(driver)
     enable_lacp(driver)
 
-def big_headless(invisible=True, PATH=None):
+def headless():
     chrome_options = ChromeOptions()
     # --no-sandbox seems to be necessary in Docker
     # cf https://github.com/joyzoursky/docker-python-chromedriver/blob/master/test_script.py # noqa
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-gpu')
-    if invisible:
-        chrome_options.add_argument('--headless')
-    # window size matters:
+    chrome_options.add_argument('--headless')
+    # window size sometimes matters:
     # `Other element would receive the click: <div class="py-3 Footer"></div>`
     chrome_options.add_argument('--window-size=1920,1080')
     return chrome_options
@@ -104,4 +107,4 @@ def enable_lacp(driver):
 
 
 if __name__ == '__main__':
-    main()
+    main(argv[:])
