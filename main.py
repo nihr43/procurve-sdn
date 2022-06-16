@@ -6,6 +6,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.service import Service
 from os import environ
 from time import sleep
 from sys import argv, stderr
@@ -20,8 +21,8 @@ def main(argv):
     else:
         options = ChromeOptions()
 
-    executable_path = environ.get('CHROMEDRIVER') or '/usr/bin/chromedriver'
-    driver = Chrome(executable_path=executable_path,
+    s = Service(environ.get('CHROMEDRIVER') or '/usr/bin/chromedriver')
+    driver = Chrome(service=s,
                     options=options)
 
 
