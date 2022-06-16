@@ -47,6 +47,19 @@ def headless():
     return chrome_options
 
 
+# it appears we have to traverse all the way down from default_content whenever we switch frames
+def to_menu(driver):
+    driver.switch_to.default_content()
+    driver.switch_to.frame("loginFrame")
+    driver.switch_to.frame("menuFrame")
+
+
+def to_main(driver):
+    driver.switch_to.default_content()
+    driver.switch_to.frame("loginFrame")
+    driver.switch_to.frame("mainFrame")
+
+
 def login(driver, wait, password):
     log.info("Logging in...")
     driver.switch_to.frame("loginFrame")
@@ -56,40 +69,30 @@ def login(driver, wait, password):
     pass_box.send_keys(Keys.RETURN)
 
     # wait for full page to load before returning
-    driver.switch_to.frame("mainFrame")
+    to_main(driver)
     wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@name='btnRefresh']")))
-    driver.switch_to.default_content()
 
 
 def enable_jumbo_frames(driver, wait):
-    driver.switch_to.frame("loginFrame")
-    driver.switch_to.frame("menuFrame")
+    to_menu(driver)
     ports = wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@id='ports']")))
     ports.click()
-    # apparently we have to traverse all the way back down from "default_content" every time we switch frames.
-    #   as in, "mainFrame" is not resolvable from "menuFrame".
-    driver.switch_to.default_content()
-    driver.switch_to.frame("loginFrame")
-    driver.switch_to.frame("mainFrame")
+    to_main(driver)
     jumbo_checkbox = wait.until(ec.visibility_of_element_located((By.XPATH, "//input[@id='R10']")))
     if not jumbo_checkbox.is_selected():
         jumbo_checkbox.click()
         apply = driver.find_element_by_name('btnSaveSettings')
         apply.click()
-    driver.switch_to.default_content()
 
 
 def enable_lacp(driver, wait):
-    driver.switch_to.frame("loginFrame")
-    driver.switch_to.frame("menuFrame")
+    to_menu(driver)
     trunks = wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@id='trunks']")))
     trunks.click()
+
     lacp_setup = wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@id='trunksla']")))
     lacp_setup.click()
-    driver.switch_to.default_content()
-    driver.switch_to.frame("loginFrame")
-    driver.switch_to.frame("mainFrame")
-
+    to_main(driver)
     lacp_checkboxes = driver.find_elements(by=By.XPATH, value="//input[@type='checkbox']")
 
     boxes_mutated = []
@@ -104,8 +107,6 @@ def enable_lacp(driver, wait):
         apply.click()
         alert = driver.switch_to.alert
         alert.accept()
-
-    driver.switch_to.default_content()
 
 
 if __name__ == '__main__':
