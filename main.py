@@ -28,9 +28,10 @@ def main(argv):
     password=''
 
     driver.get(base)
-    login(driver, password)
-    enable_jumbo_frames(driver)
-    enable_lacp(driver)
+    wait = WebDriverWait(driver, 10)
+    login(driver, wait, password)
+    enable_jumbo_frames(driver, wait)
+    enable_lacp(driver, wait)
 
 def headless():
     chrome_options = ChromeOptions()
@@ -45,11 +46,10 @@ def headless():
     return chrome_options
 
 
-def login(driver, password):
+def login(driver, wait, password):
     log.info("Logging in...")
     driver.switch_to.frame("loginFrame")
 
-    wait = WebDriverWait(driver, 10)
     wait.until(ec.visibility_of_element_located((By.XPATH, "//input[@id='password']")))
     pass_box = driver.find_element_by_id('password')
 #   pass_box.send_keys(password)
@@ -61,8 +61,7 @@ def login(driver, password):
     driver.switch_to.default_content()
 
 
-def enable_jumbo_frames(driver):
-    wait = WebDriverWait(driver, 10)
+def enable_jumbo_frames(driver, wait):
     driver.switch_to.frame("loginFrame")
     driver.switch_to.frame("menuFrame")
     ports = wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@id='ports']")))
@@ -80,8 +79,7 @@ def enable_jumbo_frames(driver):
     driver.switch_to.default_content()
 
 
-def enable_lacp(driver):
-    wait = WebDriverWait(driver, 10)
+def enable_lacp(driver, wait):
     driver.switch_to.frame("loginFrame")
     driver.switch_to.frame("menuFrame")
     trunks = wait.until(ec.visibility_of_element_located((By.XPATH, "//*[@id='trunks']")))
