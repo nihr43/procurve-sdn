@@ -94,14 +94,18 @@ def enable_lacp(driver):
 
     lacp_checkboxes = driver.find_elements_by_xpath("//input[@type='checkbox']")
 
+    boxes_mutated = []
+
     for check in lacp_checkboxes:
         if not check.is_selected():
             check.click()
+            boxes_mutated.append(check)
 
-    apply = driver.find_element_by_name('btnSaveSettings')
-    apply.click()
-    alert = driver.switch_to.alert
-    alert.accept()
+    if boxes_mutated:
+        apply = driver.find_element_by_name('btnSaveSettings')
+        apply.click()
+        alert = driver.switch_to.alert
+        alert.accept()
 
     driver.switch_to.default_content()
 
